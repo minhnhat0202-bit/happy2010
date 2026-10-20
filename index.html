@@ -266,7 +266,9 @@ const PRIZES = [
 ];
 
 /* ---------- storage ---------- */
-const KEY = 'vongquay-2010-v2';
+const KEY = 'vongquay-2010-v3';
+// open the page with ?reset to wipe all players and spins in this browser
+if (new URLSearchParams(location.search).has('reset')) { try { localStorage.removeItem(KEY); } catch(e) {} history.replaceState(null, '', location.pathname); }
 let db = { players:{}, last:'' };
 try { const raw = localStorage.getItem(KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); } catch(e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {} };
