@@ -251,22 +251,22 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 const PRIZES = [
-  { short:'Lời chúc', emoji:'💖', title:'Lời chúc yêu thương', tint:'#FFE1EA',
+  { short:'Quà đặc biệt số 1', emoji:'💖', title:'Quà đặc biệt số 1', tint:'#FFE1EA',
     wish:'Chúc em ngày 20/10 xinh đẹp, hạnh phúc và nhận được nhiều yêu thương <3',
     gift:'Ngàn trái tim bay ngập tràn màn hình', colors:['#F0507A','#E3406C','#F7688D','#D93663'] },
-  { short:'Trà sữa', emoji:'🧋', title:'Ly trà sữa ngọt ngào', tint:'#F7E6D6',
+  { short:'Quà đặc biệt số 2', emoji:'🧋', title:'Quà đặc biệt số 2', tint:'#F7E6D6',
     wish:'Tặng em một ly trà sữa ngọt ngào cho hôm nay nhé.',
     gift:'1 ly trà sữa full topping', colors:['#C98B5B','#B8784A','#D49A6A','#BE8051'] },
-  { short:'Nắng thu', emoji:'🍂', title:'Bộ ảnh mùa thu', tint:'#FFEBD0',
+  { short:'Quà đặc biệt số 3', emoji:'🍂', title:'Quà đặc biệt số 3', tint:'#FFEBD0',
     wish:'Hôm nay là một ngày rất đẹp, chúc em cũng luôn xinh xắn, rạng ngời như nắng mùa thu.',
     gift:'Một bộ ảnh chụp mùa thu', colors:['#F29A33','#E8892A','#F5AA4E','#E3832A'] },
-  { short:'Cuốn sách', emoji:'📚', title:'Cuốn sách tri thức', tint:'#ECE6FB',
+  { short:'Quà đặc biệt số 4', emoji:'📚', title:'Quà đặc biệt số 4', tint:'#ECE6FB',
     wish:'Tri thức là sức mạnh, hãy để mình luôn là một cô gái xinh đẹp và thông minh nhé',
     gift:'Một cuốn sách', colors:['#8A6FD8','#7A5FCB','#9A82E0','#7058C0'] },
 ];
 
 /* ---------- storage ---------- */
-const KEY = 'vongquay-2010-v1';
+const KEY = 'vongquay-2010-v2';
 let db = { players:{}, last:'' };
 try { const raw = localStorage.getItem(KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); } catch(e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {} };
@@ -303,12 +303,12 @@ function drawWheel() {
     const large = s.size > 180 ? 1 : 0;
     paths += `<path d="M${C} ${C}L${x1.toFixed(2)} ${y1.toFixed(2)}A${R} ${R} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}Z" fill="${s.color}" stroke="#fff" stroke-width="2.5"/>`;
     const mid = (s.start + s.end) / 2;
-    const fs = Math.max(11, Math.min(18, 150 * s.size * Math.PI / 180 * 0.55));
     const pr = PRIZES[s.p];
+    const fs = Math.max(10, Math.min(18, 150 * s.size * Math.PI / 180 * 0.55, 190 / pr.short.length));
     // left half is flipped so labels stay upright; emoji always sits at the rim
     labels += mid <= 180
-      ? `<text class="slice-label" transform="rotate(${(mid - 90).toFixed(2)} ${C} ${C})" x="${C + R - 14}" y="${C}" dy="0.35em" text-anchor="end" font-size="${fs.toFixed(1)}">${pr.short} ${pr.emoji}</text>`
-      : `<text class="slice-label" transform="rotate(${(mid + 90).toFixed(2)} ${C} ${C})" x="${C - R + 14}" y="${C}" dy="0.35em" text-anchor="start" font-size="${fs.toFixed(1)}">${pr.emoji} ${pr.short}</text>`;
+      ? `<text class="slice-label" transform="rotate(${(mid - 90).toFixed(2)} ${C} ${C})" x="${C + R - 14}" y="${C}" dy="0.35em" text-anchor="end" font-size="${fs.toFixed(1)}">${pr.short}</text>`
+      : `<text class="slice-label" transform="rotate(${(mid + 90).toFixed(2)} ${C} ${C})" x="${C - R + 14}" y="${C}" dy="0.35em" text-anchor="start" font-size="${fs.toFixed(1)}">${pr.short}</text>`;
   });
   for (let i = 0; i < 24; i++) {
     const [x, y] = pt(R + 13, i * 15);
@@ -657,7 +657,7 @@ function showResult(p, fresh = false) {
   const gift = [giftHeart, giftTea, giftPhotos, giftBook][p](name);
   $('#resultCard').innerHTML = `
     <h2 id="resTitle">Chúc mừng ${esc(name)}! 🎉</h2>
-    <p class="lead">Vòng quay đã dừng ở ô <b>${pr.short} ${pr.emoji}</b></p>
+    <p class="lead">Vòng quay đã dừng ở ô <b>${pr.short}</b> 🎁</p>
     <div class="prize-tag" style="background:${pr.colors[0]}">${pr.emoji} ${pr.title}</div>
     <div class="gift">${gift}</div>
     <p class="wish">${esc(pr.wish)}</p>
