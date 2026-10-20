@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vòng Quay 20/10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#FFF4EC; --bg2:#FFE3EA;
+  --ink:#4A2734; --ink-soft:#8A6170; --line:#F3D4DC;
+  --rose:#E8436F; --rose-dark:#B8284F; --card:#FFFFFF;
+  --gold:#F6B94A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  font-family:"Be Vietnam Pro",system-ui,sans-serif; color:var(--ink);
+  background:radial-gradient(circle at 15% 10%,#FFE9D2 0,transparent 40%),
+             radial-gradient(circle at 90% 80%,#FFD6E2 0,transparent 45%),
+             linear-gradient(160deg,var(--bg1),var(--bg2));
+  background-attachment:fixed; overflow-x:hidden;
+}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.app{max-width:1240px;margin:0 auto;padding:20px 16px 32px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+header{grid-column:1/-1;text-align:center}
+header h1{font-family:"Dancing Script",cursive;font-size:clamp(2.2rem,5vw,3.4rem);color:var(--rose);line-height:1.1;text-shadow:0 2px 0 #fff}
+header p{color:var(--ink-soft);font-weight:500;margin-top:4px}
+
+/* ---------- WHEEL ---------- */
+.stage{display:flex;flex-direction:column;align-items:center;gap:16px}
+.wheel-wrap{position:relative;width:min(100%,600px,calc(100vh - 170px));min-width:280px;aspect-ratio:1}
+.rotor{position:absolute;inset:0;will-change:transform}
+.rotor svg{width:100%;height:100%;display:block;filter:drop-shadow(0 18px 30px rgba(184,40,79,.28))}
+.slice-label{font-family:"Be Vietnam Pro",sans-serif;font-weight:700;fill:#fff;paint-order:stroke;stroke:rgba(80,20,40,.28);stroke-width:3px}
+.bulb{animation:blink 1.1s infinite steps(1)}
+.bulb.alt{animation-delay:.55s}
+@keyframes blink{0%,100%{fill:#FFF8D6}50%{fill:#F6B94A}}
+.pointer{position:absolute;left:50%;top:-3.2%;width:10%;transform-origin:50% 22%;translate:-50% 0;z-index:3;filter:drop-shadow(0 4px 4px rgba(0,0,0,.25))}
+
+.hub{
+  position:absolute;left:50%;top:50%;width:26.2%;aspect-ratio:1;border-radius:50%;z-index:4;
+  translate:-50% -50%;
+  background:#ddd url("face.jpg") center/cover no-repeat;
+  border:6px solid #fff;
+  box-shadow:0 7px 0 var(--rose-dark),0 12px 22px rgba(120,20,50,.35),inset 0 0 0 2px rgba(0,0,0,.08);
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.hub::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.35),transparent 45%);
+  transition:box-shadow .12s ease}
+.hub:hover{filter:brightness(1.05)}
+.hub:focus-visible{outline:4px solid var(--gold);outline-offset:4px}
+.hub:active,.hub.pressed,.hub.spinning{
+  transform:translateY(6px) scale(.94);
+  box-shadow:0 1px 0 var(--rose-dark),0 4px 8px rgba(120,20,50,.3);
+}
+.hub:active::after,.hub.pressed::after,.hub.spinning::after{box-shadow:inset 0 10px 22px rgba(0,0,0,.55),inset 0 -4px 10px rgba(255,255,255,.15)}
+.hub .tag{position:absolute;left:50%;bottom:-14%;translate:-50% 0;background:var(--rose);color:#fff;font-weight:800;
+  font-size:clamp(.7rem,1.6vw,.95rem);letter-spacing:.12em;padding:.28em .9em;border-radius:99px;border:3px solid #fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.2);white-space:nowrap}
+.hub.spinning .tag{background:#9C8A90}
+.hub:not(.spinning) .tag{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chip{background:#fff;border:1px solid var(--line);padding:8px 14px;border-radius:99px;font-weight:600;font-size:.9rem;color:var(--ink-soft);box-shadow:0 2px 6px rgba(184,40,79,.08)}
+.chip:hover{color:var(--rose);border-color:var(--rose)}
+.chip:disabled{opacity:.5;cursor:not-allowed}
+.hint{color:var(--ink-soft);font-size:.92rem;text-align:center}
+
+/* ---------- PANEL ---------- */
+.panel{background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:22px;padding:18px;
+  box-shadow:0 12px 30px rgba(184,40,79,.12);display:flex;flex-direction:column;gap:18px;position:sticky;top:16px}
+.panel h2{font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px}
+.panel h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:8px;display:flex;justify-content:space-between}
+.player{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:linear-gradient(135deg,#FFE1EA,#FFF1E2)}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--rose);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.3rem;flex:none;box-shadow:0 0 0 3px #fff}
+.player .who{flex:1;min-width:0}
+.player .who b{display:block;font-size:1.1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player .who span{font-size:.85rem;color:var(--ink-soft)}
+.link{color:var(--rose);font-weight:600;font-size:.82rem;text-decoration:underline;text-underline-offset:3px}
+
+.collection{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.badge{border-radius:14px;padding:10px;border:1px dashed var(--line);display:flex;align-items:center;gap:8px;filter:grayscale(1);opacity:.5;transition:.3s}
+.badge.got{filter:none;opacity:1;border-style:solid;background:var(--tint);border-color:transparent}
+.badge .em{font-size:1.5rem}
+.badge b{font-size:.82rem;display:block;line-height:1.2}
+.badge span{font-size:.75rem;color:var(--ink-soft)}
+.progress{height:8px;border-radius:99px;background:#F6E3E8;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#F6B94A,var(--rose));transition:width .6s}
+.trophy{margin-top:10px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,#FFF3C4,#FFD9A8);font-weight:700;font-size:.88rem;display:none}
+.trophy.on{display:block;animation:pop .5s}
+
+.history{list-style:none;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+.history li button{width:100%;text-align:left;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:#FFF8F5;border:1px solid transparent}
+.history li button:hover{border-color:var(--line)}
+.history .em{font-size:1.2rem}
+.history .t{flex:1;font-size:.88rem;font-weight:600}
+.history time{font-size:.75rem;color:var(--ink-soft)}
+.empty{font-size:.88rem;color:var(--ink-soft);padding:10px;border-radius:12px;background:#FFF8F5}
+.board{list-style:none;display:flex;flex-direction:column;gap:4px;max-height:170px;overflow:auto}
+.board li{display:flex;align-items:center;gap:8px;font-size:.88rem;padding:6px 8px;border-radius:10px}
+.board li.me{background:#FFE9EF;font-weight:700}
+.board .rank{width:22px;text-align:center;font-weight:800;color:var(--ink-soft)}
+.board .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .s{font-size:.78rem;color:var(--ink-soft)}
+
+/* ---------- MODALS ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(60,15,30,.55);backdrop-filter:blur(3px);z-index:50;display:none}
+.backdrop.on{display:block}
+canvas.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fireworks{z-index:55}
+#rain{z-index:70}
+.modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.card{background:var(--card);border-radius:26px;width:min(480px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:26px 24px 22px;text-align:center;
+  box-shadow:0 30px 60px rgba(60,10,30,.4);animation:pop .55s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.card h2{font-family:"Dancing Script",cursive;font-size:2.3rem;color:var(--rose);line-height:1.1}
+.card .lead{color:var(--ink-soft);margin:6px 0 14px}
+.name-form input{width:100%;font:inherit;font-size:1.1rem;padding:14px 16px;border-radius:14px;border:2px solid var(--line);outline:none;text-align:center;color:var(--ink)}
+.name-form input:focus{border-color:var(--rose)}
+.err{color:var(--rose-dark);font-size:.85rem;min-height:1.3em;margin-top:6px}
+.btn{display:inline-block;margin-top:10px;background:var(--rose);color:#fff;font-weight:700;padding:13px 28px;border-radius:99px;box-shadow:0 5px 0 var(--rose-dark);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--rose-dark)}
+.recent{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px}
+.recent .chip{padding:6px 12px;font-size:.82rem}
+
+.prize-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-weight:700;font-size:.9rem;color:#fff;margin-bottom:12px}
+.gift{min-height:220px;display:grid;place-items:center;margin:4px 0 12px}
+.wish{font-family:"Dancing Script",cursive;font-size:1.65rem;line-height:1.3;color:var(--ink)}
+.gift-caption{margin-top:10px;font-size:.9rem;color:var(--ink-soft)}
+.gift-caption b{color:var(--ink)}
+
+/* gift: heart */
+.big-heart{width:190px;animation:beat 1s infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(.98)}45%{transform:scale(1.08)}}
+/* gift: milk tea */
+.tea{width:170px;animation:float 3s ease-in-out infinite}
+.tea .pearl{animation:bob 1.8s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-2deg)}}
+@keyframes bob{50%{transform:translateY(-3px)}}
+/* gift: autumn photos */
+.photos{position:relative;width:320px;max-width:100%;height:220px}
+.polaroid{position:absolute;left:50%;top:14px;width:132px;background:#fff;padding:7px 7px 0;border-radius:4px;box-shadow:0 8px 18px rgba(0,0,0,.22);
+  translate:-50% 0;opacity:0;animation:deal .7s cubic-bezier(.2,1.2,.4,1) forwards}
+.polaroid svg{display:block;width:100%;border-radius:2px}
+.polaroid span{display:block;font-family:"Dancing Script",cursive;font-size:1.05rem;padding:4px 0 6px;color:#7A4A2A}
+@keyframes deal{from{opacity:0;transform:translateY(40px) rotate(0) translateX(0)}to{opacity:1;transform:var(--to)}}
+/* gift: book */
+.book-stage{width:310px;max-width:100%;height:220px;position:relative}
+.book{position:absolute;left:50%;top:10px;width:150px;height:200px;perspective:1000px;translate:-50% 0;animation:centerBook 1.6s .8s cubic-bezier(.3,.7,.2,1) forwards}
+@keyframes centerBook{to{translate:0 0}}
+.book .page{position:absolute;inset:0;background:linear-gradient(90deg,#EFE6D8,#FFFDF7 12%);border-radius:3px 10px 10px 3px;box-shadow:0 10px 24px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;gap:10px}
+.book .page b{font-family:"Dancing Script",cursive;font-size:1.45rem;color:#5B3FB0;line-height:1.15}
+.book .page small{font-size:.75rem;color:var(--ink-soft)}
+.book .cover{position:absolute;inset:0;transform-origin:left center;transform-style:preserve-3d;animation:openBook 1.6s .8s cubic-bezier(.3,.7,.2,1) forwards}
+.book .front,.book .back{position:absolute;inset:0;backface-visibility:hidden;border-radius:3px 10px 10px 3px}
+.book .front{background:linear-gradient(135deg,#8A6FD8,#5B3FB0);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;padding:14px;box-shadow:inset 8px 0 0 rgba(0,0,0,.18)}
+.book .front b{font-size:1.15rem;line-height:1.25}
+.book .front span{font-size:.72rem;border-top:1px solid rgba(255,255,255,.5);padding-top:8px}
+.book .back{transform:rotateY(180deg);background:#E7E0F7}
+@keyframes openBook{to{transform:rotateY(-165deg)}}
+
+@media (max-width:920px){
+  .app{grid-template-columns:1fr}
+  .panel{position:static}
+  .wheel-wrap{width:min(100%,560px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .bulb,.hub .tag,.big-heart,.tea,.tea .pearl{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Vòng Quay May Mắn 20/10</h1>
+    <p>Mừng ngày Phụ nữ Việt Nam · mỗi lượt quay là một món quà nhỏ</p>
+  </header>
+
+  <section class="stage">
+    <div class="wheel-wrap" id="wheelWrap">
+      <div class="rotor" id="rotor"></div>
+      <svg class="pointer" id="pointer" viewBox="0 0 60 80" aria-hidden="true">
+        <defs><linearGradient id="pg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#FF6B92"/><stop offset="1" stop-color="#C9285A"/></linearGradient></defs>
+        <path d="M30 78 L8 30 A24 24 0 1 1 52 30 Z" fill="url(#pg)" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M30 31 C27 25 18 25 18 32 C18 37 25 41 30 45 C35 41 42 37 42 32 C42 25 33 25 30 31 Z" fill="#fff"/>
+      </svg>
+      <button class="hub" id="hub" aria-label="Bấm để quay"><span class="tag">QUAY</span></button>
+    </div>
+    <p class="hint" id="hint">Bấm vào khuôn mặt ở giữa vòng quay để quay nhé!</p>
+    <div class="controls">
+      <button class="chip" id="shuffleBtn">🔀 Xáo lại vòng quay</button>
+      <button class="chip" id="soundBtn">🔊 Âm thanh: bật</button>
+    </div>
+  </section>
+
+  <aside class="panel" aria-label="Thành tích người chơi">
+    <h2>🏅 Thành tích</h2>
+    <div class="player">
+      <div class="avatar" id="avatar">?</div>
+      <div class="who"><b id="pName">Chưa có tên</b><span id="pSpins">0 lượt quay</span></div>
+      <button class="link" id="changeBtn">Đổi người</button>
+    </div>
+    <div>
+      <h3><span>Bộ sưu tập quà</span><span id="collCount">0/4</span></h3>
+      <div class="collection" id="collection"></div>
+      <div class="progress"><i id="collBar" style="width:0"></i></div>
+      <div class="trophy" id="trophy">🏆 Sưu tập đủ 4 món quà 20/10, giỏi quá!</div>
+    </div>
+    <div>
+      <h3><span>Lịch sử quay</span></h3>
+      <ul class="history" id="history"></ul>
+    </div>
+    <div>
+      <h3><span>Bảng người chơi</span></h3>
+      <ol class="board" id="board"></ol>
+    </div>
+  </aside>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<canvas class="fx" id="fireworks"></canvas>
+
+<!-- Name gate -->
+<div class="modal" id="nameModal" role="dialog" aria-modal="true" aria-labelledby="nameTitle">
+  <form class="card name-form" id="nameForm" novalidate>
+    <h2 id="nameTitle">Xin chào! 🌸</h2>
+    <p class="lead">Điền tên của em trước khi quay nhé</p>
+    <input id="nameInput" maxlength="30" autocomplete="off" placeholder="Tên của em..." aria-describedby="nameErr">
+    <div class="err" id="nameErr" role="alert"></div>
+    <button class="btn" type="submit">Vào quay thôi ✨</button>
+    <div class="recent" id="recent"></div>
+  </form>
+</div>
+
+<!-- Result -->
+<div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+  <div class="card" id="resultCard"></div>
+</div>
+<canvas class="fx" id="rain"></canvas>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const PRIZES = [
+  { short:'Lời chúc', emoji:'💖', title:'Lời chúc yêu thương', tint:'#FFE1EA',
+    wish:'Chúc em ngày 20/10 xinh đẹp, hạnh phúc và nhận được nhiều yêu thương <3',
+    gift:'Ngàn trái tim bay ngập tràn màn hình', colors:['#F0507A','#E3406C','#F7688D','#D93663'] },
+  { short:'Trà sữa', emoji:'🧋', title:'Ly trà sữa ngọt ngào', tint:'#F7E6D6',
+    wish:'Tặng em một ly trà sữa ngọt ngào cho hôm nay nhé.',
+    gift:'1 ly trà sữa full topping', colors:['#C98B5B','#B8784A','#D49A6A','#BE8051'] },
+  { short:'Nắng thu', emoji:'🍂', title:'Bộ ảnh mùa thu', tint:'#FFEBD0',
+    wish:'Hôm nay là một ngày rất đẹp, chúc em cũng luôn xinh xắn, rạng ngời như nắng mùa thu.',
+    gift:'Một bộ ảnh chụp mùa thu', colors:['#F29A33','#E8892A','#F5AA4E','#E3832A'] },
+  { short:'Cuốn sách', emoji:'📚', title:'Cuốn sách tri thức', tint:'#ECE6FB',
+    wish:'Tri thức là sức mạnh, hãy để mình luôn là một cô gái xinh đẹp và thông minh nhé',
+    gift:'Một cuốn sách', colors:['#8A6FD8','#7A5FCB','#9A82E0','#7058C0'] },
+];
+
+/* ---------- storage ---------- */
+const KEY = 'vongquay-2010-v1';
+let db = { players:{}, last:'' };
+try { const raw = localStorage.getItem(KEY); if (raw) db = Object.assign(db, JSON.parse(raw)); } catch(e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e) {} };
+let player = null;
+
+/* ---------- wheel build ---------- */
+const C = 260, R = 232;
+let slices = [];
+const pt = (r, deg) => { const a = deg * Math.PI / 180; return [C + r * Math.sin(a), C - r * Math.cos(a)]; };
+
+function makeSlices() {
+  let order;
+  // 4 prizes × 4, shuffled so no two neighbours (incl. wrap-around) share a prize
+  do {
+    order = [0,1,2,3].flatMap(p => [p,p,p,p]);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [order[i], order[j]] = [order[j], order[i]]; }
+  } while (order.some((p, i) => p === order[(i + 1) % order.length]));
+  const w = order.map(() => 0.6 + Math.random() * 1.0);
+  const total = w.reduce((a, b) => a + b, 0);
+  const used = [0,0,0,0];
+  let start = 0;
+  slices = order.map((p, i) => {
+    const size = w[i] / total * 360;
+    const s = { p, start, end: start + size, size, color: PRIZES[p].colors[used[p]++] };
+    start += size; return s;
+  });
+  slices[slices.length - 1].end = 360;
+}
+
+function drawWheel() {
+  let paths = '', labels = '', bulbs = '';
+  slices.forEach(s => {
+    const [x1, y1] = pt(R, s.start), [x2, y2] = pt(R, s.end);
+    const large = s.size > 180 ? 1 : 0;
+    paths += `<path d="M${C} ${C}L${x1.toFixed(2)} ${y1.toFixed(2)}A${R} ${R} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}Z" fill="${s.color}" stroke="#fff" stroke-width="2.5"/>`;
+    const mid = (s.start + s.end) / 2;
+    const fs = Math.max(11, Math.min(18, 150 * s.size * Math.PI / 180 * 0.55));
+    const pr = PRIZES[s.p];
+    // left half is flipped so labels stay upright; emoji always sits at the rim
+    labels += mid <= 180
+      ? `<text class="slice-label" transform="rotate(${(mid - 90).toFixed(2)} ${C} ${C})" x="${C + R - 14}" y="${C}" dy="0.35em" text-anchor="end" font-size="${fs.toFixed(1)}">${pr.short} ${pr.emoji}</text>`
+      : `<text class="slice-label" transform="rotate(${(mid + 90).toFixed(2)} ${C} ${C})" x="${C - R + 14}" y="${C}" dy="0.35em" text-anchor="start" font-size="${fs.toFixed(1)}">${pr.emoji} ${pr.short}</text>`;
+  });
+  for (let i = 0; i < 24; i++) {
+    const [x, y] = pt(R + 13, i * 15);
+    bulbs += `<circle class="bulb${i % 2 ? ' alt' : ''}" fill="#FFF8D6" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" stroke="#fff" stroke-width="1.5"/>`;
+  }
+  $('#rotor').innerHTML = `
+  <svg viewBox="0 0 520 520" aria-hidden="true">
+    <defs>
+      <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A9C"/><stop offset=".5" stop-color="#E8436F"/><stop offset="1" stop-color="#B8284F"/></linearGradient>
+      <radialGradient id="shine" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></radialGradient>
+      <radialGradient id="ring" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#FFD5E0"/></radialGradient>
+    </defs>
+    <circle cx="${C}" cy="${C}" r="256" fill="url(#rim)"/>
+    <circle cx="${C}" cy="${C}" r="${R + 2}" fill="#fff"/>
+    ${paths}
+    <circle cx="${C}" cy="${C}" r="${R}" fill="url(#shine)"/>
+    ${labels}
+    ${bulbs}
+    <circle cx="${C}" cy="${C}" r="96" fill="#fff" fill-opacity=".35"/>
+    <circle cx="${C}" cy="${C}" r="84" fill="url(#ring)" stroke="#F7A6BC" stroke-width="3"/>
+    <circle cx="${C}" cy="${C}" r="76" fill="none" stroke="#F7A6BC" stroke-width="2" stroke-dasharray="3 6"/>
+  </svg>`;
+}
+
+/* ---------- sound ---------- */
+let muted = false, actx = null;
+const ac = () => (actx ||= new (window.AudioContext || window.webkitAudioContext)());
+function beep(freq, dur, vol = .08, type = 'triangle', when = 0) {
+  if (muted) return;
+  try {
+    const a = ac(), t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+  } catch(e) {}
+}
+const tick = () => beep(1600, .035, .05);
+const fanfare = () => [523, 659, 784, 1047, 1319].forEach((f, i) => beep(f, .35, .07, 'sine', i * .11));
+
+/* ---------- spin ---------- */
+const rotor = $('#rotor'), pointer = $('#pointer'), hub = $('#hub');
+let rotation = 0, spinning = false, kick = 0;
+const sliceAt = local => slices.findIndex(s => local >= s.start && local < s.end);
+const localAt = rot => ((360 - rot % 360) % 360 + 360) % 360;
+
+function spin() {
+  if (spinning) return;
+  if (!player) { openName(); return; }
+  spinning = true;
+  hub.classList.add('spinning'); hub.setAttribute('aria-disabled', 'true');
+  $('#shuffleBtn').disabled = true;
+  $('#hint').textContent = 'Vòng quay đang chạy... 🤞';
+  try { ac().resume(); } catch(e) {}
+
+  // random landing point anywhere on the wheel, nudged away from slice borders
+  let a = Math.random() * 360;
+  const s = slices[sliceAt(a)], m = Math.min(2.5, s.size * .2);
+  a = Math.min(Math.max(a, s.start + m), s.end - m);
+
+  const base = rotation - (rotation % 360);
+  const target = base + 360 * (6 + (Math.random() * 3 | 0)) + (360 - a) % 360;
+  const from = rotation, delta = target - from, dur = 6500 + Math.random() * 1500;
+  const t0 = performance.now();
+  let lastIdx = sliceAt(localAt(from));
+
+  function frame(now) {
+    const t = Math.min(1, (now - t0) / dur);
+    const e = 1 - Math.pow(1 - t, 4);
+    rotation = from + delta * e;
+    rotor.style.transform = `rotate(${rotation}deg)`;
+    const idx = sliceAt(localAt(rotation));
+    if (idx !== lastIdx) { lastIdx = idx; tick(); kick = Math.min(28, kick + 16); }
+    kick *= .82;
+    pointer.style.transform = `rotate(${-kick}deg)`;
+    if (t < 1) requestAnimationFrame(frame);
+    else { pointer.style.transform = ''; finish(slices[sliceAt(localAt(rotation))].p); }
+  }
+  requestAnimationFrame(frame);
+}
+
+function finish(p) {
+  spinning = false;
+  hub.classList.remove('spinning'); hub.removeAttribute('aria-disabled');
+  $('#shuffleBtn').disabled = false;
+  $('#hint').textContent = 'Bấm vào khuôn mặt ở giữa vòng quay để quay tiếp nhé!';
+  setTimeout(() => showResult(p, true), 350);
+}
+
+// the prize is only recorded (and the player listed on the board) once "Nhận quà" is pressed
+function claim(p) {
+  player.spins++;
+  player.history.unshift({ p, t: Date.now() });
+  player.history = player.history.slice(0, 100);
+  db.players[player.key] = player;
+  save(); renderPanel();
+}
+
+hub.addEventListener('click', spin);
+$('#shuffleBtn').addEventListener('click', () => { if (spinning) return; makeSlices(); drawWheel(); });
+$('#soundBtn').addEventListener('click', e => { muted = !muted; e.currentTarget.textContent = muted ? '🔇 Âm thanh: tắt' : '🔊 Âm thanh: bật'; });
+
+/* ---------- name gate ---------- */
+function openName() {
+  const names = Object.values(db.players).map(p => p.name);
+  $('#recent').innerHTML = names.length ? names.slice(-6).map(n => `<button type="button" class="chip" data-n="${esc(n)}">${esc(n)}</button>`).join('') : '';
+  $('#nameInput').value = player ? player.name : (db.last ? db.players[db.last]?.name || '' : '');
+  $('#nameErr').textContent = '';
+  $('#backdrop').classList.add('on'); $('#nameModal').classList.add('on');
+  setTimeout(() => $('#nameInput').focus(), 50);
+}
+function setPlayer(name) {
+  const key = name.toLocaleLowerCase('vi');
+  player = db.players[key] || { name, spins: 0, history: [] };
+  player.key = key;
+  db.last = key; save();
+  $('#nameModal').classList.remove('on'); $('#backdrop').classList.remove('on');
+  renderPanel(); hub.focus();
+}
+$('#nameForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#nameInput').value.trim().replace(/\s+/g, ' ');
+  if (!name) { $('#nameErr').textContent = 'Em cần điền tên thì mới quay được nha 💕'; $('#nameInput').focus(); return; }
+  setPlayer(name);
+});
+$('#recent').addEventListener('click', e => { const b = e.target.closest('[data-n]'); if (b) setPlayer(b.dataset.n); });
+$('#changeBtn').addEventListener('click', () => { if (!spinning) openName(); });
+
+/* ---------- panel ---------- */
+const fmtTime = t => { const d = new Date(t); return d.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' }) + ' · ' + d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit' }); };
+const distinct = pl => new Set(pl.history.map(h => h.p)).size;
+
+function renderPanel() {
+  const pl = player || { name:'Chưa có tên', spins:0, history:[] };
+  $('#avatar').textContent = player ? pl.name.trim().split(' ').pop()[0].toUpperCase() : '?';
+  $('#pName').textContent = pl.name;
+  $('#pSpins').textContent = `${pl.spins} lượt quay`;
+  const counts = [0,0,0,0]; pl.history.forEach(h => counts[h.p]++);
+  const got = counts.filter(Boolean).length;
+  $('#collection').innerHTML = PRIZES.map((pr, i) => `
+    <div class="badge ${counts[i] ? 'got' : ''}" style="--tint:${pr.tint}">
+      <span class="em">${pr.emoji}</span><div><b>${pr.short}</b><span>× ${counts[i]}</span></div>
+    </div>`).join('');
+  $('#collCount').textContent = `${got}/4`;
+  $('#collBar').style.width = `${got * 25}%`;
+  $('#trophy').classList.toggle('on', got === 4);
+  $('#history').innerHTML = pl.history.length
+    ? pl.history.map((h, i) => `<li><button data-i="${i}" title="Xem lại món quà"><span class="em">${PRIZES[h.p].emoji}</span><span class="t">${PRIZES[h.p].title}</span><time>${fmtTime(h.t)}</time></button></li>`).join('')
+    : `<li class="empty">Chưa có lượt quay nào. Bấm vào khuôn mặt ở giữa để bắt đầu nhé!</li>`;
+  const rows = Object.entries(db.players).sort(([,a], [,b]) => distinct(b) - distinct(a) || b.spins - a.spins);
+  $('#board').innerHTML = rows.length
+    ? rows.map(([k, p], i) => `<li class="${player && db.players[k] === player ? 'me' : ''}"><span class="rank">${i < 3 ? ['🥇','🥈','🥉'][i] : i + 1}</span><span class="n">${esc(p.name)}</span><span class="s">${distinct(p)}/4 quà · ${p.spins} lượt</span></li>`).join('')
+    : `<li class="empty">Chưa có người chơi.</li>`;
+}
+$('#history').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (b && !spinning) showResult(player.history[+b.dataset.i].p); });
+
+/* ---------- gifts ---------- */
+function giftHeart() {
+  return `<svg class="big-heart" viewBox="0 0 200 180" aria-hidden="true">
+    <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF8FAE"/><stop offset="1" stop-color="#D62E5E"/></linearGradient></defs>
+    <path d="M100 170 C40 125 6 95 6 55 C6 25 30 6 56 6 C76 6 92 17 100 34 C108 17 124 6 144 6 C170 6 194 25 194 55 C194 95 160 125 100 170 Z" fill="url(#hg)" stroke="#fff" stroke-width="5"/>
+    <ellipse cx="55" cy="45" rx="20" ry="12" fill="#fff" opacity=".35" transform="rotate(-30 55 45)"/>
+    <text x="100" y="92" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="46" fill="#fff">20/10</text>
+  </svg>`;
+}
+function giftTea() {
+  let pearls = '', bits = '';
+  for (let i = 0; i < 26; i++) {
+    const x = 60 + Math.random() * 80, y = 222 + Math.random() * 24;
+    pearls += `<circle class="pearl" style="animation-delay:${(Math.random()*1.8).toFixed(2)}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(6 + Math.random()*2).toFixed(1)}" fill="#3B2216"/><circle cx="${(x-2).toFixed(1)}" cy="${(y-2).toFixed(1)}" r="1.6" fill="#fff" opacity=".5"/>`;
+  }
+  const jelly = ['#7BC96F','#F59AB5','#FFD66B'];
+  for (let i = 0; i < 9; i++) {
+    const x = 56 + Math.random() * 82, y = 160 + Math.random() * 50;
+    bits += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="11" height="11" rx="2" fill="${jelly[i % 3]}" opacity=".9" transform="rotate(${(Math.random()*40-20).toFixed(0)} ${x} ${y})"/>`;
+  }
+  return `<svg class="tea" viewBox="0 0 200 280" aria-hidden="true">
+    <defs>
+      <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EBC9A4"/><stop offset="1" stop-color="#B8804B"/></linearGradient>
+      <clipPath id="cup"><path d="M44 96 L156 96 L144 252 Q100 262 56 252 Z"/></clipPath>
+    </defs>
+    <g transform="rotate(14 118 70)">
+      <rect x="110" y="2" width="18" height="190" rx="9" fill="#F0507A"/>
+      <path d="M110 30 L128 22 M110 60 L128 52 M110 90 L128 82" stroke="#fff" stroke-width="5" opacity=".7"/>
+    </g>
+    <g clip-path="url(#cup)">
+      <rect x="30" y="96" width="140" height="170" fill="url(#tg)"/>
+      <path d="M30 96 H170 V122 Q150 132 130 122 T90 124 T50 122 T30 124 Z" fill="#FFF6E6"/>
+      <rect x="70" y="135" width="24" height="22" rx="4" fill="#FFF" opacity=".45" transform="rotate(-12 82 146)"/>
+      <rect x="112" y="140" width="22" height="20" rx="4" fill="#FFF" opacity=".4" transform="rotate(15 123 150)"/>
+      <rect x="96" y="196" width="34" height="20" rx="5" fill="#F7D774"/>
+      ${bits}${pearls}
+    </g>
+    <path d="M44 96 L156 96 L144 252 Q100 262 56 252 Z" fill="none" stroke="#fff" stroke-width="3" opacity=".9"/>
+    <path d="M52 104 L62 244" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+    <path d="M40 94 Q100 34 160 94 Z" fill="#fff" fill-opacity=".45" stroke="#fff" stroke-width="3"/>
+    <rect x="36" y="90" width="128" height="10" rx="5" fill="#fff"/>
+    <g transform="translate(100 182)">
+      <circle r="22" fill="#fff" opacity=".92"/>
+      <path d="M0 -3 C-2 -9 -11 -9 -11 -2 C-11 4 -4 8 0 12 C4 8 11 4 11 -2 C11 -9 2 -9 0 -3 Z" fill="#F0507A"/>
+    </g>
+  </svg>`;
+}
+function giftPhotos() {
+  const scenes = [
+    ['Nắng thu', `<rect width="120" height="100" fill="url(#s1)"/><rect y="74" width="120" height="26" fill="#C9662B"/><rect x="56" y="48" width="8" height="30" fill="#6B3A1F"/>
+      <circle cx="60" cy="40" r="22" fill="#E2552E"/><circle cx="44" cy="48" r="15" fill="#F08A2C"/><circle cx="76" cy="48" r="15" fill="#F2B23C"/><circle cx="60" cy="26" r="13" fill="#F08A2C"/>
+      <circle cx="98" cy="18" r="9" fill="#FFF3C8"/><circle cx="20" cy="84" r="2.5" fill="#F2B23C"/><circle cx="90" cy="88" r="2.5" fill="#E2552E"/>`],
+    ['Hoàng hôn', `<rect width="120" height="100" fill="url(#s2)"/><circle cx="60" cy="58" r="17" fill="#FFF1C9"/>
+      <path d="M0 64 Q30 44 55 62 Q80 46 120 60 V100 H0Z" fill="#8E3B2A"/><rect y="70" width="120" height="30" fill="#F2A65A" opacity=".85"/>
+      <path d="M44 76 H76 M50 82 H70 M54 88 H66" stroke="#FFF1C9" stroke-width="2" stroke-linecap="round"/>`],
+    ['Lối lá vàng', `<rect width="120" height="100" fill="url(#s3)"/><path d="M52 40 H68 L104 100 H16 Z" fill="#F7D79A"/>
+      <circle cx="16" cy="38" r="20" fill="#E8762B"/><circle cx="34" cy="28" r="14" fill="#F2B23C"/><circle cx="104" cy="38" r="20" fill="#D9542B"/><circle cx="86" cy="28" r="14" fill="#F08A2C"/>
+      <rect x="14" y="52" width="4" height="30" fill="#6B3A1F"/><rect x="102" y="52" width="4" height="30" fill="#6B3A1F"/>
+      <circle cx="50" cy="80" r="2" fill="#E2552E"/><circle cx="70" cy="70" r="2" fill="#F08A2C"/><circle cx="60" cy="92" r="2" fill="#D9542B"/>`],
+    ['Cà phê sáng', `<rect width="120" height="100" fill="#F7E7CF"/><rect y="62" width="120" height="38" fill="#9A6236"/>
+      <ellipse cx="60" cy="64" rx="26" ry="6" fill="#fff"/><path d="M36 50 H84 L80 72 Q60 80 40 72 Z" fill="#fff"/><ellipse cx="60" cy="50" rx="24" ry="6" fill="#6B3A1F"/>
+      <path d="M84 54 Q96 56 84 66" stroke="#fff" stroke-width="4" fill="none"/>
+      <path d="M52 40 Q48 32 54 26 M64 40 Q60 30 66 22" stroke="#C9A27E" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M14 80 l8 -6 l2 8 z" fill="#E2552E"/><path d="M98 82 l9 -4 l-1 9 z" fill="#F2B23C"/><path d="M20 30 l7 -3 l0 7 z" fill="#F08A2C"/>`],
+  ];
+  const defs = `<defs>
+    <linearGradient id="s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE3A3"/><stop offset="1" stop-color="#F7B267"/></linearGradient>
+    <linearGradient id="s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F38BA0"/><stop offset="1" stop-color="#F6B26B"/></linearGradient>
+    <linearGradient id="s3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FCE38A"/><stop offset="1" stop-color="#F3A64B"/></linearGradient></defs>`;
+  const fan = [[-96,-14,18],[-34,-5,4],[30,5,4],[94,14,18]];
+  return `<div class="photos">${scenes.map(([cap, svg], i) => `
+    <div class="polaroid" style="--to:translateX(${fan[i][0]}px) translateY(${fan[i][2]}px) rotate(${fan[i][1]}deg);animation-delay:${.15 + i * .18}s">
+      <svg viewBox="0 0 120 100" aria-hidden="true">${i === 0 ? defs : ''}${svg}</svg><span>${cap}</span>
+    </div>`).join('')}</div>`;
+}
+function giftBook(name) {
+  return `<div class="book-stage"><div class="book">
+    <div class="page"><b>Tri thức là<br>sức mạnh</b><small>Dành tặng ${esc(name)} 💜</small></div>
+    <div class="cover"><div class="front"><b>Xinh đẹp<br>&amp; Thông minh</b><span>Tặng ${esc(name)}</span></div><div class="back"></div></div>
+  </div></div>`;
+}
+
+/* ---------- effects ---------- */
+function fxCanvas(el) {
+  const ctx = el.getContext('2d'); let W = 0, H = 0, dpr = 1;
+  const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; el.width = W * dpr; el.height = H * dpr; };
+  resize(); addEventListener('resize', resize);
+  return { ctx, get W() { return W; }, get H() { return H; }, get dpr() { return dpr; } };
+}
+const FW = fxCanvas($('#fireworks')), RN = fxCanvas($('#rain'));
+const FW_COLORS = ['#FF4D7E','#FFD166','#7EE0FF','#B794F6','#FF9F43','#FFFFFF','#6EE7B7'];
+let rockets = [], sparks = [], fwUntil = 0, fwRunning = false, nextLaunch = 0;
+
+function fireworks(ms = 5500) { fwUntil = performance.now() + ms; nextLaunch = 0; if (!fwRunning) { fwRunning = true; requestAnimationFrame(fwLoop); } }
+function stopFireworks() { fwUntil = 0; }
+let fwLast = 0;
+function fwLoop(now) {
+  const { ctx, W, H, dpr } = FW;
+  const dt = Math.min(2.5, (now - (fwLast || now)) / 16.67 || 1); fwLast = now;
+  if (now < fwUntil && now > nextLaunch) {
+    const h = H * (.45 + Math.random() * .35), g = .12;
+    rockets.push({ x: W * (.12 + Math.random() * .76), y: H, vx: (Math.random() - .5) * 1.5, vy: -Math.sqrt(2 * g * h), c: FW_COLORS[Math.random() * FW_COLORS.length | 0] });
+    nextLaunch = now + 250 + Math.random() * 450;
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'lighter';
+  rockets = rockets.filter(r => {
+    r.x += r.vx * dt; r.y += r.vy * dt; r.vy += .12 * dt;
+    ctx.fillStyle = '#FFE9B0'; ctx.beginPath(); ctx.arc(r.x, r.y, 2.4, 0, 7); ctx.fill();
+    if (r.vy >= -.5) {
+      const n = 60 + Math.random() * 40 | 0, ring = Math.random() < .35;
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, sp = ring ? 4 : 1 + Math.random() * 4.5;
+        sparks.push({ x: r.x, y: r.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .012 + Math.random() * .014, c: Math.random() < .2 ? '#fff' : r.c });
+      }
+      return false;
+    }
+    return true;
+  });
+  sparks = sparks.filter(s => {
+    s.vx *= .97; s.vy = s.vy * .97 + .05 * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= s.decay * dt;
+    if (s.life <= 0) return false;
+    ctx.globalAlpha = s.life; ctx.fillStyle = s.c; ctx.beginPath(); ctx.arc(s.x, s.y, 2.2, 0, 7); ctx.fill();
+    return true;
+  });
+  ctx.globalAlpha = 1;
+  if (now < fwUntil || rockets.length || sparks.length) requestAnimationFrame(fwLoop);
+  else { ctx.globalCompositeOperation = 'source-over'; ctx.clearRect(0, 0, W, H); fwRunning = false; fwLast = 0; }
+}
+
+const HEART = new Path2D('M0 -0.3 C-0.05 -0.68 -0.62 -0.66 -0.62 -0.2 C-0.62 0.16 -0.22 0.4 0 0.62 C0.22 0.4 0.62 0.16 0.62 -0.2 C0.62 -0.66 0.05 -0.68 0 -0.3 Z');
+const LEAF = new Path2D('M0 -1 C0.65 -0.55 0.6 0.5 0 1 C-0.6 0.5 -0.65 -0.55 0 -1 Z M0 -1 L0 1.25');
+const HEART_COLORS = ['#FF4D7E','#FF7AA2','#E8436F','#FFB3C7','#FF2E63','#F9A8D4'];
+const LEAF_COLORS = ['#E2552E','#F08A2C','#F2B23C','#C9662B','#D9542B'];
+let drops = [], rainRunning = false, rainLast = 0, emit = null;
+
+function rain(kind) {
+  const { W, H } = RN;
+  if (kind === 'hearts') emit = { kind, left: 1000, rate: 9 };
+  else if (kind === 'leaves') emit = { kind, left: 140, rate: 1.2 };
+  else return;
+  if (!rainRunning) { rainRunning = true; requestAnimationFrame(rainLoop); }
+}
+function stopRain() { emit = null; drops.forEach(d => d.life = Math.min(d.life, 30)); }
+function spawn(kind) {
+  const { W, H } = RN;
+  if (kind === 'hearts') {
+    const a = Math.random() * Math.PI * 2, sp = 3 + Math.random() * 9;
+    drops.push({ kind, x: W / 2, y: H / 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2, s: 8 + Math.random() * 22, r: (Math.random() - .5) * .8, vr: (Math.random() - .5) * .05,
+      c: HEART_COLORS[Math.random() * HEART_COLORS.length | 0], life: 150 + Math.random() * 120, max: 0, ph: Math.random() * 6 });
+  } else {
+    drops.push({ kind, x: Math.random() * W, y: -20, vx: (Math.random() - .5), vy: 1 + Math.random() * 1.6, s: 8 + Math.random() * 10, r: Math.random() * 6, vr: (Math.random() - .5) * .08,
+      c: LEAF_COLORS[Math.random() * LEAF_COLORS.length | 0], life: 600, max: 0, ph: Math.random() * 6 });
+  }
+  drops[drops.length - 1].max = drops[drops.length - 1].life;
+}
+function rainLoop(now) {
+  const { ctx, W, H, dpr } = RN;
+  const dt = Math.min(2.5, (now - (rainLast || now)) / 16.67 || 1); rainLast = now;
+  if (emit) {
+    const n = Math.min(emit.left, Math.round(emit.rate * dt + Math.random()));
+    for (let i = 0; i < n; i++) spawn(emit.kind);
+    emit.left -= n; if (emit.left <= 0) emit = null;
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W * dpr, H * dpr);
+  drops = drops.filter(d => {
+    d.life -= dt; if (d.life <= 0 || d.y > H + 40) return false;
+    d.ph += .05 * dt;
+    if (d.kind === 'hearts') { d.vx *= .96; d.vy = d.vy * .96 - .03 * dt; d.x += (d.vx + Math.sin(d.ph) * .6) * dt; }
+    else { d.x += (d.vx + Math.sin(d.ph) * 1.2) * dt; }
+    d.y += d.vy * dt; d.r += d.vr * dt;
+    const k = d.s * dpr, cos = Math.cos(d.r) * k, sin = Math.sin(d.r) * k;
+    ctx.setTransform(cos, sin, -sin, cos, d.x * dpr, d.y * dpr);
+    ctx.globalAlpha = Math.min(1, d.life / 40, (d.max - d.life + 4) / 8);
+    if (d.kind === 'hearts') { ctx.fillStyle = d.c; ctx.fill(HEART); }
+    else { ctx.fillStyle = d.c; ctx.fill(LEAF); ctx.strokeStyle = 'rgba(90,40,10,.5)'; ctx.lineWidth = .12; ctx.stroke(LEAF); }
+    return true;
+  });
+  ctx.globalAlpha = 1;
+  if (emit || drops.length) requestAnimationFrame(rainLoop);
+  else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W * dpr, H * dpr); rainRunning = false; rainLast = 0; }
+}
+
+/* ---------- result popup ---------- */
+let pendingPrize = null;
+function showResult(p, fresh = false) {
+  pendingPrize = fresh ? p : null;
+  const pr = PRIZES[p], name = player.name;
+  const gift = [giftHeart, giftTea, giftPhotos, giftBook][p](name);
+  $('#resultCard').innerHTML = `
+    <h2 id="resTitle">Chúc mừng ${esc(name)}! 🎉</h2>
+    <p class="lead">Vòng quay đã dừng ở ô <b>${pr.short} ${pr.emoji}</b></p>
+    <div class="prize-tag" style="background:${pr.colors[0]}">${pr.emoji} ${pr.title}</div>
+    <div class="gift">${gift}</div>
+    <p class="wish">${esc(pr.wish)}</p>
+    <p class="gift-caption">Món quà: <b>${pr.gift}</b></p>
+    <button class="btn" id="closeRes">${fresh ? 'Nhận quà 🎁' : 'Đóng'}</button>`;
+  $('#backdrop').classList.add('on'); $('#resultModal').classList.add('on');
+  $('#closeRes').addEventListener('click', closeResult);
+  $('#closeRes').focus();
+  fanfare(); fireworks();
+  if (p === 0) rain('hearts');
+  if (p === 2) rain('leaves');
+}
+function closeResult() {
+  if (pendingPrize !== null) { claim(pendingPrize); pendingPrize = null; }
+  $('#resultModal').classList.remove('on'); $('#backdrop').classList.remove('on');
+  stopFireworks(); stopRain(); hub.focus();
+}
+// a fresh prize can only be closed with "Nhận quà"; replays from history close freely
+$('#resultModal').addEventListener('click', e => { if (e.target.id === 'resultModal' && pendingPrize === null) closeResult(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && pendingPrize === null && $('#resultModal').classList.contains('on')) closeResult(); });
+
+/* ---------- init ---------- */
+makeSlices(); drawWheel(); renderPanel(); openName();
+})();
+</script>
+</body>
+</html>
